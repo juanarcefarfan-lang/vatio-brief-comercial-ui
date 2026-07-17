@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VATIO — Debriefing Comercial</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #F5F3EF;
+    --surface: #FFFFFF;
+    --border: #E2DDD6;
+    --text: #1A1814;
+    --text-muted: #7A7670;
+    --accent: #1A1814;
+    --accent-light: #F0EDE8;
+    --green: #2D6A4F;
+    --green-light: #E8F4EE;
+    --red: #9B2335;
+    --red-light: #FAEAEC;
+    --blue: #1D4E89;
+    --blue-light: #EAF0F8;
+  }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 2rem 1rem;
+  }
+
+  .wrapper {
+    max-width: 760px;
+    margin: 0 auto;
+  }
+
+  header {
+    margin-bottom: 2.5rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .logo {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.15em;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    margin-bottom: 0.75rem;
+  }
+
+  h1 {
+    font-size: 26px;
+    font-weight: 300;
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+    color: var(--text);
+  }
+
+  h1 span {
+    font-weight: 500;
+  }
+
+  .subtitle {
+    font-size: 14px;
+    color: var(--text-muted);
+    margin-top: 0.4rem;
+    font-weight: 300;
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+  }
+
+  .field-label {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    display: block;
+    margin-bottom: 0.5rem;
+  }
+
+  .meta-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-bottom: 1rem;
+  }
+
+  input[type="text"] {
+    width: 100%;
+    padding: 10px 12px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    color: var(--text);
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+
+  input[type="text"]:focus {
+    border-color: var(--text);
+  }
+
+  textarea {
+    width: 100%;
+    min-height: 200px;
+    padding: 12px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    line-height: 1.65;
+    color: var(--text);
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    resize: vertical;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+
+  textarea:focus {
+    border-color: var(--text);
+  }
+
+  textarea::placeholder, input::placeholder {
+    color: #B8B4AE;
+  }
+
+  .btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    padding: 13px 24px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--bg);
+    background: var(--text);
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: opacity 0.15s;
+    margin-top: 1rem;
+  }
+
+  .btn:hover { opacity: 0.85; }
+  .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  .progress {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 1.5rem;
+  }
+
+  .progress-step {
+    flex: 1;
+    height: 2px;
+    background: var(--border);
+    border-radius: 2px;
+    transition: background 0.4s;
+  }
+
+  .progress-step.active { background: var(--blue); }
+  .progress-step.done { background: var(--green); }
+
+  .output-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    overflow: hidden;
+    display: none;
+  }
+
+  .output-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.9rem 1.25rem;
+    border-bottom: 1px solid var(--border);
+    background: var(--accent-light);
+  }
+
+  .output-title {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+
+  .copy-btn {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--text-muted);
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 3px 10px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .copy-btn:hover {
+    background: var(--surface);
+    color: var(--text);
+  }
+
+  .output-body {
+    padding: 1.25rem;
+    font-size: 14px;
+    line-height: 1.75;
+    color: var(--text);
+    white-space: pre-wrap;
+    font-weight: 300;
+  }
+
+  .status-msg {
+    text-align: center;
+    padding: 1.5rem;
+    font-size: 13px;
+    color: var(--text-muted);
+    display: none;
+  }
+
+  .error-msg {
+    background: var(--red-light);
+    border: 1px solid #E8C0C6;
+    border-radius: 6px;
+    padding: 0.75rem 1rem;
+    font-size: 13px;
+    color: var(--red);
+    margin-top: 1rem;
+    display: none;
+    font-family: 'DM Mono', monospace;
+  }
+
+  .divider {
+    height: 1px;
+    background: var(--border);
+    margin: 1.5rem 0;
+  }
+
+  @media (max-width: 540px) {
+    .meta-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="wrapper">
+  <header>
+    <div class="logo">VATIO · Ingeniería Maker Solutions</div>
+    <h1>Debriefing <span>comercial</span></h1>
+    <p class="subtitle">Narra libremente la reunión con el cliente. Incluye dolores, sistemas potenciales y tu criterio técnico.</p>
+  </header>
+
+  <div class="card">
+    <div class="meta-grid">
+      <div>
+        <label class="field-label" for="cliente">Cliente / empresa</label>
+        <input type="text" id="cliente" placeholder="Ej: Carozzi — Planta San Bernardo" />
+      </div>
+      <div>
+        <label class="field-label" for="industria">Industria</label>
+        <input type="text" id="industria" placeholder="Ej: Manufactura / Alimentos" />
+      </div>
+    </div>
+
+    <label class="field-label" for="notas">Notas de la reunión</label>
+    <textarea id="notas" placeholder="Narra lo que conversaste. Incluye los dolores que mencionó el cliente, los sistemas que propones y tu criterio técnico..."></textarea>
+
+    <button class="btn" id="btnAnalizar" onclick="analizar()">
+      Analizar reunión y generar brief
+    </button>
+
+    <div class="error-msg" id="errorMsg"></div>
+  </div>
+
+  <div id="outputSection" style="display:none;">
+    <div class="divider"></div>
+
+    <div class="progress">
+      <div class="progress-step" id="s1"></div>
+      <div class="progress-step" id="s2"></div>
+      <div class="progress-step" id="s3"></div>
+    </div>
+
+    <div class="status-msg" id="statusMsg">Procesando con GPT...</div>
+
+    <div class="output-card" id="block1">
+      <div class="output-header">
+        <span class="output-title">Brief — Dolores y oportunidades</span>
+        <button class="copy-btn" onclick="copiar('brief')">Copiar</button>
+      </div>
+      <div class="output-body" id="briefContent"></div>
+    </div>
+
+    <div class="output-card" id="block2">
+      <div class="output-header">
+        <span class="output-title">Borrador de servicios para propuesta</span>
+        <button class="copy-btn" onclick="copiar('propuesta')">Copiar</button>
+      </div>
+      <div class="output-body" id="propuestaContent"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const WORKER_URL = 'https://vatio-brief-comercial.juanarcefarfan.workers.dev';
+let briefText = '';
+let propuestaText = '';
+
+function setStep(n) {
+  for (let i = 1; i <= 3; i++) {
+    const el = document.getElementById('s' + i);
+    if (i < n) el.className = 'progress-step done';
+    else if (i === n) el.className = 'progress-step active';
+    else el.className = 'progress-step';
+  }
+}
+
+function showError(msg) {
+  const el = document.getElementById('errorMsg');
+  el.textContent = msg;
+  el.style.display = 'block';
+}
+
+function hideError() {
+  document.getElementById('errorMsg').style.display = 'none';
+}
+
+async function analizar() {
+  const cliente = document.getElementById('cliente').value.trim();
+  const industria = document.getElementById('industria').value.trim();
+  const notas = document.getElementById('notas').value.trim();
+
+  if (!notas || notas.length < 30) {
+    showError('Agrega más detalle en las notas de la reunión.');
+    return;
+  }
+
+  hideError();
+  const btn = document.getElementById('btnAnalizar');
+  btn.disabled = true;
+  btn.textContent = 'Analizando...';
+
+  document.getElementById('outputSection').style.display = 'block';
+  document.getElementById('block1').style.display = 'none';
+  document.getElementById('block2').style.display = 'none';
+  document.getElementById('statusMsg').style.display = 'block';
+  document.getElementById('statusMsg').textContent = 'Conectando con el Worker...';
+  setStep(1);
+
+  try {
+    const resp = await fetch(WORKER_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ cliente, industria, notas })
+    });
+
+    document.getElementById('statusMsg').textContent = 'Procesando con GPT...';
+    setStep(2);
+
+    const raw = await resp.text();
+
+    let data;
+    try {
+      data = JSON.parse(raw);
+    } catch(e) {
+      showError('Respuesta inesperada del Worker: ' + raw.substring(0, 200));
+      btn.disabled = false;
+      btn.textContent = 'Analizar reunión y generar brief';
+      document.getElementById('statusMsg').style.display = 'none';
+      return;
+    }
+
+    if (data.error) {
+      showError('Error OpenAI: ' + JSON.stringify(data.error));
+      btn.disabled = false;
+      btn.textContent = 'Analizar reunión y generar brief';
+      document.getElementById('statusMsg').style.display = 'none';
+      return;
+    }
+
+    if (!data.output_text) {
+      showError('Respuesta vacía. Detalle: ' + JSON.stringify(data).substring(0, 300));
+      btn.disabled = false;
+      btn.textContent = 'Analizar reunión y generar brief';
+      document.getElementById('statusMsg').style.display = 'none';
+      return;
+    }
+
+    const full = data.output_text;
+
+    const fase1Match = full.match(/FASE 1[\s\S]*?(?=FASE 2|$)/i);
+    const fase2Match = full.match(/FASE 2[\s\S]*/i);
+
+    briefText = fase1Match ? fase1Match[0].replace(/FASE 1[^\n]*\n?/i, '').trim() : full;
+    propuestaText = fase2Match ? fase2Match[0].replace(/FASE 2[^\n]*\n?/i, '').trim() : '';
+
+    document.getElementById('briefContent').textContent = briefText;
+    document.getElementById('block1').style.display = 'block';
+
+    if (propuestaText) {
+      document.getElementById('propuestaContent').textContent = propuestaText;
+      document.getElementById('block2').style.display = 'block';
+    }
+
+    setStep(3);
+    document.getElementById('statusMsg').style.display = 'none';
+
+  } catch(e) {
+    showError('Error de red: ' + e.message + '. Verifica que el Worker esté activo.');
+  }
+
+  btn.disabled = false;
+  btn.textContent = 'Analizar reunión y generar brief';
+}
+
+function copiar(tipo) {
+  const txt = tipo === 'brief' ? briefText : propuestaText;
+  navigator.clipboard.writeText(txt).then(() => {
+    const btn = document.querySelector(tipo === 'brief' ? '#block1 .copy-btn' : '#block2 .copy-btn');
+    btn.textContent = '¡Copiado!';
+    setTimeout(() => btn.textContent = 'Copiar', 2000);
+  }).catch(() => {});
+}
+</script>
+</body>
+</html>
