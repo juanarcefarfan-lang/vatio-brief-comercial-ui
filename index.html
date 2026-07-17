@@ -280,6 +280,28 @@
       </div>
     </div>
 
+    <div class="meta-grid">
+      <div>
+        <label class="field-label" for="nombreContacto">Nombre del contacto</label>
+        <input type="text" id="nombreContacto" placeholder="Ej: Pedro Silva" />
+      </div>
+      <div>
+        <label class="field-label" for="cargo">Cargo del contacto</label>
+        <input type="text" id="cargo" placeholder="Ej: Jefe de Seguridad" />
+      </div>
+    </div>
+
+    <div class="meta-grid">
+      <div>
+        <label class="field-label" for="email">Email</label>
+        <input type="text" id="email" placeholder="Ej: psilva@empresa.cl" />
+      </div>
+      <div>
+        <label class="field-label" for="telefono">Teléfono</label>
+        <input type="text" id="telefono" placeholder="Ej: +56 9 1234 5678" />
+      </div>
+    </div>
+
     <label class="field-label" for="notas">Notas de la reunión</label>
     <textarea id="notas" placeholder="Narra lo que conversaste. Incluye los dolores que mencionó el cliente, los sistemas que propones y tu criterio técnico..."></textarea>
 
@@ -346,6 +368,10 @@ function hideError() {
 async function analizar() {
   const cliente = document.getElementById('cliente').value.trim();
   const industria = document.getElementById('industria').value.trim();
+  const nombreContacto = document.getElementById('nombreContacto').value.trim();
+  const cargo = document.getElementById('cargo').value.trim();
+  const email = document.getElementById('email').value.trim();
+  const telefono = document.getElementById('telefono').value.trim();
   const notas = document.getElementById('notas').value.trim();
 
   if (!notas || notas.length < 30) {
@@ -369,7 +395,7 @@ async function analizar() {
     const resp = await fetch(WORKER_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ cliente, industria, notas })
+      body: JSON.stringify({ cliente, industria, notas, nombreContacto, cargo, email, telefono })
     });
 
     document.getElementById('statusMsg').textContent = 'Procesando con GPT...';
