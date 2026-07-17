@@ -447,6 +447,16 @@ async function subirArchivo(event) {
   const file = event.target.files[0];
   if (!file) return;
 
+  const statusEl = document.getElementById('audioStatus');
+  const sizeKB = (file.size / 1024).toFixed(1);
+  statusEl.textContent = `Archivo: ${file.name || 'sin nombre'} | ${file.type || 'sin tipo'} | ${sizeKB} KB`;
+
+  if (file.size < 1024) {
+    showError(`El archivo llegó casi vacío (${file.size} bytes). Si viene de iCloud, ábrelo primero en la app Archivos para forzar la descarga completa, luego vuelve a intentar.`);
+    event.target.value = '';
+    return;
+  }
+
   if (file.size > 25 * 1024 * 1024) {
     showError('El archivo supera los 25 MB permitidos por la transcripción.');
     event.target.value = '';
@@ -470,7 +480,8 @@ async function transcribirAudio(fileOrBlob, filename) {
     const data = await resp.json();
 
     if (data.error) {
-      showError('Error de transcripción: ' + JSON.stringify(data.error));
+      const debugInfo = data.debug ? ' | Debug: ' + JSON.stringify(data.debug) : '';
+      showError('Error de transcripción: ' + JSON.stringify(data.error) + debugInfo);
       statusEl.textContent = '';
       return;
     }
