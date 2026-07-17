@@ -480,8 +480,7 @@ async function transcribirAudio(fileOrBlob, filename) {
     const data = await resp.json();
 
     if (data.error) {
-      const debugInfo = data.debug ? ' | Debug: ' + JSON.stringify(data.debug) : '';
-      showError('Error de transcripción: ' + JSON.stringify(data.error) + debugInfo);
+      showError(data.error);
       statusEl.textContent = '';
       return;
     }
