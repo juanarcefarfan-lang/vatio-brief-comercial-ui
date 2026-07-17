@@ -158,6 +158,43 @@
   }
 
   .btn:hover { opacity: 0.85; }
+
+  .audio-controls {
+    display: flex;
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
+    flex-wrap: wrap;
+  }
+
+  .btn-audio {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 14px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text);
+    background: var(--accent-light);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    cursor: pointer;
+    transition: opacity 0.15s;
+  }
+
+  .btn-audio:hover { opacity: 0.8; }
+
+  .btn-audio.recording {
+    background: var(--red-light);
+    color: var(--red);
+    border-color: var(--red);
+  }
+
+  .audio-status {
+    font-size: 12px;
+    color: var(--text-muted);
+    align-self: center;
+  }
   .btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
   .progress {
@@ -303,7 +340,15 @@
     </div>
 
     <label class="field-label" for="notas">Notas de la reunión</label>
-    <textarea id="notas" placeholder="Narra lo que conversaste. Incluye los dolores que mencionó el cliente, los sistemas que propones y tu criterio técnico..."></textarea>
+
+    <div class="audio-controls">
+      <button type="button" class="btn-audio" id="btnGrabar" onclick="toggleGrabacion()">🎙️ Grabar nota de voz</button>
+      <label class="btn-audio" for="fileAudio">📁 Subir audio/video</label>
+      <input type="file" id="fileAudio" accept="audio/*,video/mp4,.mp4,.m4a,.mp3,.wav" style="display:none" onchange="subirArchivo(event)" />
+      <span class="audio-status" id="audioStatus"></span>
+    </div>
+
+    <textarea id="notas" placeholder="Narra lo que conversaste. Incluye los dolores que mencionó el cliente, los sistemas que propones y tu criterio técnico... (o usa grabación/subida de audio arriba)"></textarea>
 
     <button class="btn" id="btnAnalizar" onclick="analizar()">
       Analizar reunión y generar brief
@@ -363,6 +408,80 @@ function showError(msg) {
 
 function hideError() {
   document.getElementById('errorMsg').style.display = 'none';
+}
+
+let mediaRecorder = null;
+let audioChunks = [];
+
+async function toggleGrabacion() {
+  const btn = document.getElementById('btnGrabar');
+
+  if (mediaRecorder && mediaRecorder.state === 'recording') {
+    mediaRecorder.stop();
+    btn.textContent = '🎙️ Grabar nota de voz';
+    btn.classList.remove('recording');
+    return;
+  }
+
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    audioChunks = [];
+    mediaRecorder = new MediaRecorder(stream);
+
+    mediaRecorder.ondataavailable = (e) => audioChunks.push(e.data);
+    mediaRecorder.onstop = async () => {
+      const blob = new Blob(audioChunks, { type: mediaRecorder.mimeType || 'audio/webm' });
+      stream.getTracks().forEach(t => t.stop());
+      await transcribirAudio(blob, 'grabacion.webm');
+    };
+
+    mediaRecorder.start();
+    btn.textContent = '⏹️ Detener grabación';
+    btn.classList.add('recording');
+  } catch (e) {
+    showError('No se pudo acceder al micrófono: ' + e.message);
+  }
+}
+
+async function subirArchivo(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  if (file.size > 25 * 1024 * 1024) {
+    showError('El archivo supera los 25 MB permitidos por la transcripción.');
+    event.target.value = '';
+    return;
+  }
+
+  await transcribirAudio(file, file.name);
+  event.target.value = '';
+}
+
+async function transcribirAudio(fileOrBlob, filename) {
+  const statusEl = document.getElementById('audioStatus');
+  hideError();
+  statusEl.textContent = 'Transcribiendo audio...';
+
+  const formData = new FormData();
+  formData.append('audio', fileOrBlob, filename);
+
+  try {
+    const resp = await fetch(WORKER_URL, { method: 'POST', body: formData });
+    const data = await resp.json();
+
+    if (data.error) {
+      showError('Error de transcripción: ' + JSON.stringify(data.error));
+      statusEl.textContent = '';
+      return;
+    }
+
+    const notasEl = document.getElementById('notas');
+    notasEl.value = (notasEl.value.trim() ? notasEl.value.trim() + '\n\n' : '') + data.transcript;
+    statusEl.textContent = 'Transcripción agregada — revisa el texto antes de analizar.';
+  } catch (e) {
+    showError('Error al transcribir: ' + e.message);
+    statusEl.textContent = '';
+  }
 }
 
 async function analizar() {
